@@ -20,13 +20,13 @@ In the Snowsight dbt project environment, set:
 
 Source table configuration in this project:
 
-- source name: `nyctaxi`
-- table: `trips`
+- source name: `source_data`
+- table: `menu`
 - source database: `target.database` from environment
-- source schema: `NYCTAXI`
+- source schema: `target.schema` from environment
 
 That means your source should exist as:
-- `<target.database>.NYCTAXI.TRIPS`
+- `<target.database>.<target.schema>.MENU`
 
 ## 3. Run in embedded dbt
 
@@ -48,6 +48,6 @@ export DBT_PROFILES_DIR=$(pwd)
 
 ## Project layout
 
-- `models/staging/stg_nyctaxi_trips.sql`: cleaned staging model from source table.
-- `models/marts/fct_taxi_rides.sql`: mart model with trip duration.
+- `models/staging/stg_menu.sql`: cleaned staging model from source table.
+- `models/marts/fct_menu_items.sql`: mart model with gross margin.
 - `models/**.yml`: source docs and tests.

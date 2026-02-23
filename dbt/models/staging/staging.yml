@@ -1,26 +1,27 @@
 version: 2
 
 sources:
-  - name: nyctaxi
-    description: Raw NYC taxi trips loaded in Snowflake.
+  - name: source_data
+    description: Raw source tables loaded in Snowflake.
     database: "{{ target.database }}"
-    schema: "NYCTAXI"
+    schema: "{{ target.schema }}"
     tables:
-      - name: trips
-        description: Raw taxi trips table.
+      - name: menu
+        description: Raw menu table.
         columns:
-          - name: tpep_pickup_datetime
+          - name: menu_item_id
             tests:
               - not_null
 
 models:
-  - name: stg_nyctaxi_trips
-    description: Typed and lightly cleaned taxi trips for downstream marts.
+  - name: stg_menu
+    description: Typed and lightly cleaned menu items for downstream marts.
     columns:
-      - name: tpep_pickup_datetime
+      - name: menu_item_id
         tests:
           - not_null
-      - name: fare_amount
+          - unique
+      - name: sale_price_usd
         tests:
           - dbt_utils.accepted_range:
               min_value: 0

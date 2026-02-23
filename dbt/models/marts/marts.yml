@@ -1,13 +1,15 @@
 version: 2
 
 models:
-  - name: fct_taxi_rides
-    description: Fact-like model with trip duration derived in minutes.
+  - name: fct_menu_items
+    description: Menu-item mart with gross margin derived from price and cost.
     columns:
-      - name: trip_minutes
+      - name: menu_item_id
         tests:
           - not_null
+          - unique
+      - name: gross_margin_usd
+        tests:
           - dbt_utils.accepted_range:
               min_value: 0
               inclusive: true
-
