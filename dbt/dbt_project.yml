@@ -1,8 +1,8 @@
-name: taxi_dw_dbt
+name: menu_analytics_dbt
 version: 1.0.0
 config-version: 2
 
-profile: taxi_dw_snowflake
+profile: menu_analytics_snowflake
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -16,9 +16,8 @@ clean-targets:
   - "dbt_packages"
 
 models:
-  taxi_dw_dbt:
+  menu_analytics_dbt:
     staging:
       +materialized: view
     marts:
       +materialized: table
-

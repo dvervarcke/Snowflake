@@ -1,4 +1,4 @@
-taxi_dw_snowflake:
+menu_analytics_snowflake:
   target: dev
   outputs:
     dev:
@@ -9,7 +9,6 @@ taxi_dw_snowflake:
       role: "<role>"
       database: "<database>"
       warehouse: "<warehouse>"
-      schema: "taxi_dw_dbt_dev"
+      schema: "menu_analytics_dbt_dev"
       threads: 4
       client_session_keep_alive: false
-
