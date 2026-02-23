@@ -1,4 +1,2 @@
-profiles.yml
 target/
 dbt_packages/
-

@@ -38,6 +38,12 @@ dbt run
 dbt test
 ```
 
+If your runtime asks for a `profiles.yml`, this project includes one at:
+
+- `dbt/profiles.yml`
+
+Set the password value before running, or provide a runtime secret and update the file to use an environment variable.
+
 ## Optional: local CLI use
 
 If you also want local CLI runs, use `profiles/profiles.yml.example` as a template for a local `profiles.yml`, then set:
