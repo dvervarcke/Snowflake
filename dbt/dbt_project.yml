@@ -2,7 +2,7 @@ name: menu_analytics_dbt
 version: 1.0.0
 config-version: 2
 
-profile: menu_analytics_snowflake
+profile: default
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
