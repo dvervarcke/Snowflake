@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: nyctaxi
+    description: Raw NYC taxi trips loaded in Snowflake.
+    database: "{{ target.database }}"
+    schema: "NYCTAXI"
+    tables:
+      - name: trips
+        description: Raw taxi trips table.
+        columns:
+          - name: tpep_pickup_datetime
+            tests:
+              - not_null
+
+models:
+  - name: stg_nyctaxi_trips
+    description: Typed and lightly cleaned taxi trips for downstream marts.
+    columns:
+      - name: tpep_pickup_datetime
+        tests:
+          - not_null
+      - name: fare_amount
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true

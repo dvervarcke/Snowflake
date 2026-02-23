@@ -1,0 +1,24 @@
+name: taxi_dw_dbt
+version: 1.0.0
+config-version: 2
+
+profile: taxi_dw_snowflake
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  taxi_dw_dbt:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+
