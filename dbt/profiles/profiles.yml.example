@@ -1,0 +1,14 @@
+menu_analytics_snowflake:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "<account_locator>" # e.g. abc12345.us-east-1
+      user: "<username>"
+      password: "<password>"
+      role: "<role>"
+      database: "<database>"
+      warehouse: "<warehouse>"
+      schema: "menu_analytics_dbt_dev"
+      threads: 4
+      client_session_keep_alive: false

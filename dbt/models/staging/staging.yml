@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: source_data
+    description: Raw source tables loaded in Snowflake.
+    database: "{{ target.database }}"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: menu
+        description: Raw menu table.
+        columns:
+          - name: menu_item_id
+            tests:
+              - not_null
+
+models:
+  - name: stg_menu
+    description: Typed and lightly cleaned menu items for downstream marts.
+    columns:
+      - name: menu_item_id
+        tests:
+          - not_null
+          - unique
+      - name: sale_price_usd
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
