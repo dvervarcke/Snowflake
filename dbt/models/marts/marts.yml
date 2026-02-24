@@ -39,12 +39,10 @@ models:
               field: truck_brand_name
       - name: gross_margin_usd
         tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
+          - non_negative
       - name: gross_margin_pct
         tests:
-          - dbt_utils.accepted_range:
+          - range_between:
               min_value: 0
               max_value: 1
               inclusive: true

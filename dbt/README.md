@@ -38,6 +38,13 @@ dbt run
 dbt test
 ```
 
+This project does not require external dbt Hub packages. If your environment blocks outbound internet access, you can run:
+
+```sql
+dbt run
+dbt test
+```
+
 If your runtime asks for a `profiles.yml`, this project includes one at:
 
 - `dbt/profiles.yml`
