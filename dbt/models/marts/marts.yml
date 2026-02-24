@@ -21,7 +21,7 @@ models:
           - unique
 
   - name: fct_menu_items
-    description: Item-grain fact mart with menu type and brand references.
+    description: Incremental item-grain fact mart with menu type and brand references.
     columns:
       - name: menu_item_id
         tests:
