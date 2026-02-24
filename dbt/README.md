@@ -16,7 +16,7 @@ In the Snowsight dbt project environment, set:
 - Role: your dbt execution role
 - Warehouse: your transformation warehouse
 - Database: target database for dbt models
-- Schema: target schema for dbt models (for example `TAXI_DW_DBT_DEV`)
+- Schema: source schema for raw data (models are routed by layer/branch)
 
 Source table configuration in this project:
 
@@ -27,6 +27,11 @@ Source table configuration in this project:
 
 That means your source should exist as:
 - `<target.database>.<target.schema>.MENU`
+
+Model schema behavior:
+
+- `codex/*` branches (or non-prod targets): staging -> `DEV_SILVER`, marts -> `DEV_GOLD`
+- `main` branch (or `prod` target): staging -> `PROD_SILVER`, marts -> `PROD_GOLD`
 
 ## 3. Run in embedded dbt
 
