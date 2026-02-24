@@ -62,6 +62,7 @@ export DBT_PROFILES_DIR=$(pwd)
 ## Project layout
 
 - `models/staging/stg_menu.sql`: cleaned staging model from source table.
+- `models/marts/dim_menu.sql`: menu dimension.
 - `models/marts/dim_menu_types.sql`: menu-type dimension.
 - `models/marts/dim_truck_brands.sql`: truck-brand dimension.
 - `models/marts/fct_menu_items.sql`: item-grain fact model with margin metrics.

@@ -10,6 +10,7 @@ with source_menu as (
         menu_item_id,
         menu_id,
         menu_type_id,
+        md5(upper(coalesce(truck_brand_name, 'UNKNOWN'))) as truck_brand_id,
         truck_brand_name,
         menu_item_name,
         item_category,
@@ -31,6 +32,7 @@ with source_menu as (
         menu_item_id,
         menu_id,
         menu_type_id,
+        truck_brand_id,
         truck_brand_name,
         menu_item_name,
         item_category,
@@ -52,6 +54,7 @@ left join existing e
 where e.menu_item_id is null
     or s.menu_id is distinct from e.menu_id
     or s.menu_type_id is distinct from e.menu_type_id
+    or s.truck_brand_id is distinct from e.truck_brand_id
     or s.truck_brand_name is distinct from e.truck_brand_name
     or s.menu_item_name is distinct from e.menu_item_name
     or s.item_category is distinct from e.item_category

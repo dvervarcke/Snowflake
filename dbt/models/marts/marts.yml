@@ -1,6 +1,19 @@
 version: 2
 
 models:
+  - name: dim_menu
+    description: Menu dimension keyed by menu_id.
+    columns:
+      - name: menu_id
+        tests:
+          - not_null
+          - unique
+      - name: menu_type_id
+        tests:
+          - relationships:
+              to: ref('dim_menu_types')
+              field: menu_type_id
+
   - name: dim_menu_types
     description: Menu type dimension from the raw menu source.
     columns:
@@ -15,28 +28,37 @@ models:
   - name: dim_truck_brands
     description: Truck brand dimension from the raw menu source.
     columns:
-      - name: truck_brand_name
+      - name: truck_brand_id
         tests:
           - not_null
           - unique
+      - name: truck_brand_name
+        tests:
+          - not_null
 
   - name: fct_menu_items
-    description: Incremental item-grain fact mart with menu type and brand references.
+    description: Incremental item-grain fact mart with menu and truck-brand references.
     columns:
       - name: menu_item_id
         tests:
           - not_null
           - unique
+      - name: menu_id
+        tests:
+          - relationships:
+              to: ref('dim_menu')
+              field: menu_id
       - name: menu_type_id
         tests:
           - relationships:
               to: ref('dim_menu_types')
               field: menu_type_id
-      - name: truck_brand_name
+      - name: truck_brand_id
         tests:
+          - not_null
           - relationships:
               to: ref('dim_truck_brands')
-              field: truck_brand_name
+              field: truck_brand_id
       - name: gross_margin_usd
         tests:
           - non_negative
@@ -46,3 +68,4 @@ models:
               min_value: 0
               max_value: 1
               inclusive: true
+
