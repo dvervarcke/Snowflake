@@ -1,0 +1,15 @@
+default:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "pqb00620.us-west-2"
+      user: "DVERVARCKE"
+      password: "REPLACE_WITH_PASSWORD"
+      role: "ACCOUNTADMIN"
+      warehouse: "SNOWFLAKE_LEARNING_WH"
+      database: "SNOWFLAKE_LEARNING_DB"
+      schema: "DVERVARCKE_LOAD_SAMPLE_DATA_FROM_S3"
+      threads: 4
+      client_session_keep_alive: false
+
