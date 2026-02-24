@@ -16,7 +16,7 @@ In the Snowsight dbt project environment, set:
 - Role: your dbt execution role
 - Warehouse: your transformation warehouse
 - Database: target database for dbt models
-- Schema: target schema for dbt models (for example `TAXI_DW_DBT_DEV`)
+- Schema: source schema for raw data (models are routed by layer/branch)
 
 Source table configuration in this project:
 
@@ -27,6 +27,11 @@ Source table configuration in this project:
 
 That means your source should exist as:
 - `<target.database>.<target.schema>.MENU`
+
+Model schema behavior:
+
+- `codex/*` branches (or non-prod targets): staging -> `DEV_SILVER`, marts -> `DEV_GOLD`
+- `main` branch (or `prod` target): staging -> `PROD_SILVER`, marts -> `PROD_GOLD`
 
 ## 3. Run in embedded dbt
 
@@ -65,5 +70,7 @@ export DBT_PROFILES_DIR=$(pwd)
 - `models/marts/dim_menu.sql`: menu dimension.
 - `models/marts/dim_menu_types.sql`: menu-type dimension.
 - `models/marts/dim_truck_brands.sql`: truck-brand dimension.
-- `models/marts/fct_menu_items.sql`: item-grain fact model with margin metrics.
+- `models/marts/dim_item_categories.sql`: item-category dimension.
+- `models/marts/dim_item_subcategories.sql`: item-subcategory dimension.
+- `models/marts/fct_menu_items.sql`: item-grain fact model with margin metrics and dimension keys.
 - `models/**.yml`: source docs and tests.

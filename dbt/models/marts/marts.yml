@@ -36,8 +36,36 @@ models:
         tests:
           - not_null
 
+  - name: dim_item_categories
+    description: Item category dimension from the raw menu source.
+    columns:
+      - name: item_category_id
+        tests:
+          - not_null
+          - unique
+      - name: item_category
+        tests:
+          - not_null
+
+  - name: dim_item_subcategories
+    description: Item subcategory dimension from the raw menu source.
+    columns:
+      - name: item_subcategory_id
+        tests:
+          - not_null
+          - unique
+      - name: item_category_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_item_categories')
+              field: item_category_id
+      - name: item_subcategory
+        tests:
+          - not_null
+
   - name: fct_menu_items
-    description: Incremental item-grain fact mart with menu and truck-brand references.
+    description: Incremental item-grain fact mart with menu, brand, and item category references.
     columns:
       - name: menu_item_id
         tests:
@@ -59,6 +87,18 @@ models:
           - relationships:
               to: ref('dim_truck_brands')
               field: truck_brand_id
+      - name: item_category_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_item_categories')
+              field: item_category_id
+      - name: item_subcategory_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_item_subcategories')
+              field: item_subcategory_id
       - name: gross_margin_usd
         tests:
           - non_negative
@@ -68,4 +108,3 @@ models:
               min_value: 0
               max_value: 1
               inclusive: true
-
