@@ -11,8 +11,8 @@ with source_menu as (
         menu_id,
         menu_type_id,
         md5(upper(coalesce(truck_brand_name, 'UNKNOWN'))) as truck_brand_id,
-        item_category,
-        item_subcategory,
+        md5(upper(coalesce(item_category, 'UNKNOWN'))) as item_category_id,
+        md5(upper(coalesce(item_subcategory, 'UNKNOWN'))) as item_subcategory_id,
         cost_of_goods_usd,
         sale_price_usd,
         sale_price_usd - cost_of_goods_usd as gross_margin_usd,
@@ -31,8 +31,8 @@ with source_menu as (
         menu_id,
         menu_type_id,
         truck_brand_id,
-        item_category,
-        item_subcategory,
+        item_category_id,
+        item_subcategory_id,
         cost_of_goods_usd,
         sale_price_usd,
         gross_margin_usd,
@@ -51,8 +51,8 @@ where e.menu_item_id is null
     or s.menu_id is distinct from e.menu_id
     or s.menu_type_id is distinct from e.menu_type_id
     or s.truck_brand_id is distinct from e.truck_brand_id
-    or s.item_category is distinct from e.item_category
-    or s.item_subcategory is distinct from e.item_subcategory
+    or s.item_category_id is distinct from e.item_category_id
+    or s.item_subcategory_id is distinct from e.item_subcategory_id
     or s.cost_of_goods_usd is distinct from e.cost_of_goods_usd
     or s.sale_price_usd is distinct from e.sale_price_usd
     or s.gross_margin_usd is distinct from e.gross_margin_usd
