@@ -1,0 +1,197 @@
+name: Snowflake dbt CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "dbt/**"
+      - ".github/workflows/snowflake-dbt-cicd.yml"
+  push:
+    branches:
+      - "codex/snowflake-dbt"
+      - "main"
+    paths:
+      - "dbt/**"
+      - ".github/workflows/snowflake-dbt-cicd.yml"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deployment target"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+      full_refresh:
+        description: "Run dbt with --full-refresh"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snowflake-dbt-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve-target:
+    runs-on: ubuntu-latest
+    outputs:
+      target: ${{ steps.resolve.outputs.target }}
+      environment: ${{ steps.resolve.outputs.environment }}
+      full_refresh: ${{ steps.resolve.outputs.full_refresh }}
+    steps:
+      - name: Resolve target and environment
+        id: resolve
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            target="${{ github.event.inputs.target }}"
+            full_refresh="${{ github.event.inputs.full_refresh }}"
+          elif [[ "${{ github.ref_name }}" == "main" ]]; then
+            target="prod"
+            full_refresh="false"
+          else
+            target="dev"
+            full_refresh="false"
+          fi
+
+          echo "target=${target}" >> "$GITHUB_OUTPUT"
+          echo "environment=${target}" >> "$GITHUB_OUTPUT"
+          echo "full_refresh=${full_refresh}" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: resolve-target
+    environment: ${{ needs.resolve-target.outputs.environment }}
+    env:
+      DBT_TARGET: ${{ needs.resolve-target.outputs.target }}
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_SOURCE_SCHEMA: ${{ secrets.SNOWFLAKE_SOURCE_SCHEMA }}
+      SNOWFLAKE_DEV_ROLE: ${{ secrets.SNOWFLAKE_DEV_ROLE }}
+      SNOWFLAKE_DEV_WAREHOUSE: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
+      SNOWFLAKE_PROD_ROLE: ${{ secrets.SNOWFLAKE_PROD_ROLE }}
+      SNOWFLAKE_PROD_WAREHOUSE: ${{ secrets.SNOWFLAKE_PROD_WAREHOUSE }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-snowflake==1.9.4 snowflake-connector-python
+
+      - name: Resolve role and warehouse for target
+        id: role_wh
+        shell: bash
+        run: |
+          if [[ "$DBT_TARGET" == "prod" ]]; then
+            role="${SNOWFLAKE_PROD_ROLE:-$SNOWFLAKE_ROLE}"
+            warehouse="${SNOWFLAKE_PROD_WAREHOUSE:-$SNOWFLAKE_WAREHOUSE}"
+            orchestration_schema="PROD_ORCHESTRATION"
+          else
+            role="${SNOWFLAKE_DEV_ROLE:-$SNOWFLAKE_ROLE}"
+            warehouse="${SNOWFLAKE_DEV_WAREHOUSE:-$SNOWFLAKE_WAREHOUSE}"
+            orchestration_schema="DEV_ORCHESTRATION"
+          fi
+
+          if [[ -z "$SNOWFLAKE_ACCOUNT" || -z "$SNOWFLAKE_USER" || -z "$SNOWFLAKE_PASSWORD" || -z "$SNOWFLAKE_DATABASE" || -z "$SNOWFLAKE_SOURCE_SCHEMA" || -z "$role" || -z "$warehouse" ]]; then
+            echo "Missing one or more required Snowflake secrets."
+            exit 1
+          fi
+
+          echo "role=$role" >> "$GITHUB_OUTPUT"
+          echo "warehouse=$warehouse" >> "$GITHUB_OUTPUT"
+          echo "orchestration_schema=$orchestration_schema" >> "$GITHUB_OUTPUT"
+
+      - name: Create temporary dbt profile
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/dbt_profiles"
+          cat > "$RUNNER_TEMP/dbt_profiles/profiles.yml" <<EOF
+          default:
+            target: ${DBT_TARGET}
+            outputs:
+              dev:
+                type: snowflake
+                account: "${SNOWFLAKE_ACCOUNT}"
+                user: "${SNOWFLAKE_USER}"
+                password: "${SNOWFLAKE_PASSWORD}"
+                role: "${{ steps.role_wh.outputs.role }}"
+                warehouse: "${{ steps.role_wh.outputs.warehouse }}"
+                database: "${SNOWFLAKE_DATABASE}"
+                schema: "${SNOWFLAKE_SOURCE_SCHEMA}"
+                threads: 4
+                client_session_keep_alive: false
+              prod:
+                type: snowflake
+                account: "${SNOWFLAKE_ACCOUNT}"
+                user: "${SNOWFLAKE_USER}"
+                password: "${SNOWFLAKE_PASSWORD}"
+                role: "${{ steps.role_wh.outputs.role }}"
+                warehouse: "${{ steps.role_wh.outputs.warehouse }}"
+                database: "${SNOWFLAKE_DATABASE}"
+                schema: "${SNOWFLAKE_SOURCE_SCHEMA}"
+                threads: 4
+                client_session_keep_alive: false
+          EOF
+
+      - name: Deploy Snowflake stored procedures
+        env:
+          SF_ROLE: ${{ steps.role_wh.outputs.role }}
+          SF_WAREHOUSE: ${{ steps.role_wh.outputs.warehouse }}
+          ORCH_SCHEMA: ${{ steps.role_wh.outputs.orchestration_schema }}
+        run: |
+          python - <<'PY'
+          import snowflake.connector
+          from pathlib import Path
+          import io
+          import os
+
+          sql_path = Path("dbt/sql/create_dbt_run_procedures.sql")
+          sql_text = sql_path.read_text(encoding="utf-8")
+          sql_text = sql_text.replace("__ORCH_SCHEMA__", os.environ["ORCH_SCHEMA"])
+
+          conn = snowflake.connector.connect(
+              account=os.environ["SNOWFLAKE_ACCOUNT"],
+              user=os.environ["SNOWFLAKE_USER"],
+              password=os.environ["SNOWFLAKE_PASSWORD"],
+              role=os.environ["SF_ROLE"],
+              warehouse=os.environ["SF_WAREHOUSE"],
+              database=os.environ["SNOWFLAKE_DATABASE"],
+              schema=os.environ["ORCH_SCHEMA"],
+          )
+          try:
+              with conn.cursor() as cur:
+                  cur.execute(f"create schema if not exists {os.environ['SNOWFLAKE_DATABASE']}.{os.environ['ORCH_SCHEMA']}")
+              for _ in conn.execute_stream(io.StringIO(sql_text), remove_comments=True):
+                  pass
+          finally:
+              conn.close()
+          PY
+
+      - name: dbt build
+        working-directory: dbt
+        env:
+          DBT_PROFILES_DIR: ${{ runner.temp }}/dbt_profiles
+          DBT_TARGET: ${{ needs.resolve-target.outputs.target }}
+          DBT_GIT_BRANCH: ${{ github.ref_name }}
+        run: |
+          args="build --target ${DBT_TARGET}"
+          if [[ "${{ needs.resolve-target.outputs.full_refresh }}" == "true" ]]; then
+            args="${args} --full-refresh"
+          fi
+          dbt ${args}

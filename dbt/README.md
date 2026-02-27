@@ -50,6 +50,35 @@ dbt run
 dbt test
 ```
 
+## GitHub CI/CD
+
+Workflow: `.github/workflows/snowflake-dbt-cicd.yml`
+
+- PR to `main`: runs deployment pipeline with `dev` target.
+- Push to `codex/snowflake-dbt`: deploys stored procedures + runs `dbt build` in `dev`.
+- Push to `main`: deploys stored procedures + runs `dbt build` in `prod`.
+- Manual run: choose `dev` or `prod` and optional `--full-refresh`.
+- Stored procedure schemas are environment-specific:
+  - `DEV_ORCHESTRATION` for `dev`
+  - `PROD_ORCHESTRATION` for `prod`
+
+Required GitHub secrets:
+
+- `SNOWFLAKE_ACCOUNT`
+- `SNOWFLAKE_USER`
+- `SNOWFLAKE_PASSWORD`
+- `SNOWFLAKE_DATABASE`
+- `SNOWFLAKE_SOURCE_SCHEMA`
+- `SNOWFLAKE_DEV_ROLE`
+- `SNOWFLAKE_DEV_WAREHOUSE`
+- `SNOWFLAKE_PROD_ROLE`
+- `SNOWFLAKE_PROD_WAREHOUSE`
+
+Optional fallback secrets:
+
+- `SNOWFLAKE_ROLE`
+- `SNOWFLAKE_WAREHOUSE`
+
 If your runtime asks for a `profiles.yml`, this project includes one at:
 
 - `dbt/profiles.yml`
@@ -74,3 +103,4 @@ export DBT_PROFILES_DIR=$(pwd)
 - `models/marts/dim_item_subcategories.sql`: item-subcategory dimension.
 - `models/marts/fct_menu_items.sql`: item-grain fact model with margin metrics and dimension keys.
 - `models/**.yml`: source docs and tests.
+- `sql/create_dbt_run_procedures.sql`: stored procedures to trigger dbt builds from Snowflake SQL.
