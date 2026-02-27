@@ -102,5 +102,6 @@ export DBT_PROFILES_DIR=$(pwd)
 - `models/marts/dim_item_categories.sql`: item-category dimension.
 - `models/marts/dim_item_subcategories.sql`: item-subcategory dimension.
 - `models/marts/fct_menu_items.sql`: item-grain fact model with margin metrics and dimension keys.
+- `models/marts/fct_category_sales.sql`: aggregated sales and margin fact by category.
 - `models/**.yml`: source docs and tests.
 - `sql/create_dbt_run_procedures.sql`: stored procedures to trigger dbt builds from Snowflake SQL.
