@@ -1,7 +1,8 @@
 -- Create stored procedures to trigger Snowflake Workspace dbt runs.
 -- Workspace name is set to "Snowflake".
+-- __ORCH_SCHEMA__ placeholder is replaced by CI/CD before deployment.
 
-create or replace procedure SNOWFLAKE_LEARNING_DB.PUBLIC.RUN_DBT_BUILD_ALL(
+create or replace procedure SNOWFLAKE_LEARNING_DB.__ORCH_SCHEMA__.RUN_DBT_BUILD_ALL(
   dbt_target string
 )
 returns variant
@@ -26,7 +27,7 @@ begin
 end;
 $$;
 
-create or replace procedure SNOWFLAKE_LEARNING_DB.PUBLIC.RUN_DBT_BUILD_SELECT(
+create or replace procedure SNOWFLAKE_LEARNING_DB.__ORCH_SCHEMA__.RUN_DBT_BUILD_SELECT(
   model_selector string,
   dbt_target string
 )
@@ -56,6 +57,6 @@ end;
 $$;
 
 -- Example calls:
--- call SNOWFLAKE_LEARNING_DB.PUBLIC.RUN_DBT_BUILD_ALL('dev');
--- call SNOWFLAKE_LEARNING_DB.PUBLIC.RUN_DBT_BUILD_ALL('prod');
--- call SNOWFLAKE_LEARNING_DB.PUBLIC.RUN_DBT_BUILD_SELECT('fct_menu_items', 'dev');
+-- call SNOWFLAKE_LEARNING_DB.__ORCH_SCHEMA__.RUN_DBT_BUILD_ALL('dev');
+-- call SNOWFLAKE_LEARNING_DB.__ORCH_SCHEMA__.RUN_DBT_BUILD_ALL('prod');
+-- call SNOWFLAKE_LEARNING_DB.__ORCH_SCHEMA__.RUN_DBT_BUILD_SELECT('fct_menu_items', 'dev');

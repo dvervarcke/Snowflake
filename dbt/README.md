@@ -58,6 +58,9 @@ Workflow: `.github/workflows/snowflake-dbt-cicd.yml`
 - Push to `codex/snowflake-dbt`: deploys stored procedures + runs `dbt build` in `dev`.
 - Push to `main`: deploys stored procedures + runs `dbt build` in `prod`.
 - Manual run: choose `dev` or `prod` and optional `--full-refresh`.
+- Stored procedure schemas are environment-specific:
+  - `DEV_ORCHESTRATION` for `dev`
+  - `PROD_ORCHESTRATION` for `prod`
 
 Required GitHub secrets:
 
