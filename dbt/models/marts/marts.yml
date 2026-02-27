@@ -108,3 +108,32 @@ models:
               min_value: 0
               max_value: 1
               inclusive: true
+
+  - name: fct_category_sales
+    description: Gold-layer aggregate fact with sales and margin totals by item category.
+    columns:
+      - name: item_category_id
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('dim_item_categories')
+              field: item_category_id
+      - name: item_category
+        tests:
+          - not_null
+      - name: menu_item_count
+        tests:
+          - non_negative
+      - name: total_sales_amount_usd
+        tests:
+          - non_negative
+      - name: total_cost_amount_usd
+        tests:
+          - non_negative
+      - name: total_gross_margin_usd
+        tests:
+          - non_negative
+      - name: avg_sale_price_usd
+        tests:
+          - non_negative
