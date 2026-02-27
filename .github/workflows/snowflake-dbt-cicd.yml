@@ -154,6 +154,7 @@ jobs:
           python - <<'PY'
           import snowflake.connector
           from pathlib import Path
+          import io
           import os
 
           sql_path = Path("dbt/sql/create_dbt_run_procedures.sql")
@@ -169,7 +170,8 @@ jobs:
               schema="PUBLIC",
           )
           try:
-              conn.execute_string(sql_text)
+              for _ in conn.execute_stream(io.StringIO(sql_text), remove_comments=True):
+                  pass
           finally:
               conn.close()
           PY
